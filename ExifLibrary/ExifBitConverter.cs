@@ -70,7 +70,8 @@ namespace ExifLibrary
                     // yyyy:MM:dd HH:mm:ss
                     // This is the expected format though some cameras
                     // can use single digits. See Issue 21.
-                    return new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]), int.Parse(parts[4]), int.Parse(parts[5]));
+                    // Also, the seconds can be non-decimal (e.g. 2016:07:31 10:10:20.291), so use double to parse. See Issue 82
+                    return new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]), int.Parse(parts[4]), (int)double.Parse(parts[5]));
                 }
                 else if (!hastime && parts.Length == 3)
                 {
