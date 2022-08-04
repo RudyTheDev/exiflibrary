@@ -159,9 +159,9 @@ namespace ExifLibrary
         /// </summary>
         /// <param name="key">The tag to set.</param>
         /// <param name="value">The value of tag.</param>
-        public void Add(ExifTag key, DateTime value)
+        public void Add(ExifTag key, DateTime value, bool preserveMilliseconds = false)
         {
-            AddItem(new ExifDateTime(key, value));
+            AddItem(new ExifDateTime(key, value, preserveMilliseconds));
         }
         /// <summary>
         /// Adds an <see cref="ExifLibrary.ExifProperty"/> with the specified key.
@@ -341,9 +341,9 @@ namespace ExifLibrary
         /// </summary>
         /// <param name="key">The tag to set.</param>
         /// <param name="value">The value of tag.</param>
-        public void Set(ExifTag key, DateTime value)
+        public void Set(ExifTag key, DateTime value, bool preserveMilliseconds = false)
         {
-            SetItem(new ExifDateTime(key, value));
+            SetItem(new ExifDateTime(key, value, preserveMilliseconds));
         }
         /// <summary>
         /// Sets an <see cref="ExifLibrary.ExifProperty"/> with the specified key.

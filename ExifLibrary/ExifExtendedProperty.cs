@@ -125,25 +125,38 @@ namespace ExifLibrary
     /// </summary>
     public class ExifDateTime : ExifProperty
     {
+        private readonly bool mPreserveMilliseconds;
         protected DateTime mValue;
         protected override object _Value { get { return Value; } set { Value = (DateTime)value; } }
         public new DateTime Value { get { return mValue; } set { mValue = value; } }
 
         static public implicit operator DateTime(ExifDateTime obj) { return obj.mValue; }
 
-        public override string ToString() { return mValue.ToString("yyyy.MM.dd HH:mm:ss"); }
+        public override string ToString()
+        {
+            if (mPreserveMilliseconds)
+                return mValue.ToString("yyyy.MM.dd HH:mm:ss.fff");
+            else
+                return mValue.ToString("yyyy.MM.dd HH:mm:ss");
+        }
 
-        public ExifDateTime(ExifTag tag, DateTime value)
+        public ExifDateTime(ExifTag tag, DateTime value, bool preserveMilliseconds)
             : base(tag)
         {
             mValue = value;
+            mPreserveMilliseconds = preserveMilliseconds;
         }
 
         public override ExifInterOperability Interoperability
         {
             get
             {
-                return new ExifInterOperability(ExifTagFactory.GetTagID(mTag), InterOpType.ASCII, (uint)20, ExifBitConverter.GetBytes(mValue, true));
+                return new ExifInterOperability(
+                    ExifTagFactory.GetTagID(mTag),
+                    InterOpType.ASCII,
+                    mPreserveMilliseconds ? (uint)24 : (uint)20,
+                    ExifBitConverter.GetBytes(mValue, true, mPreserveMilliseconds)
+                );
             }
         }
     }
@@ -172,7 +185,16 @@ namespace ExifLibrary
         {
             get
             {
-                return new ExifInterOperability(ExifTagFactory.GetTagID(mTag), InterOpType.ASCII, (uint)11, ExifBitConverter.GetBytes(mValue, false));
+                return new ExifInterOperability(
+                    ExifTagFactory.GetTagID(mTag),
+                    InterOpType.ASCII,
+                    (uint)11,
+                    ExifBitConverter.GetBytes(
+                        mValue,
+                        false,
+                        false // does not matter because we don't have time part anyway
+                    )
+                );
             }
         }
     }

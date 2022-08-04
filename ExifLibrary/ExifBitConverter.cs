@@ -59,7 +59,7 @@ namespace ExifLibrary
         /// <summary>
         /// Returns a DateTime object converted from the given byte array.
         /// </summary>
-        public static DateTime ToDateTime(byte[] data, bool hastime)
+        public static DateTime ToDateTime(byte[] data, bool hastime, out bool preserveMilliseconds)
         {
             string str = ToAscii(data, Encoding.ASCII);
             string[] parts = str.Split(new char[] { ':', ' ' });
@@ -68,27 +68,58 @@ namespace ExifLibrary
                 if (hastime && parts.Length == 6)
                 {
                     // yyyy:MM:dd HH:mm:ss
-                    // This is the expected format though some cameras
+                    // This is the expected format through some cameras
                     // can use single digits. See Issue 21.
                     // Also, the seconds can be non-decimal (e.g. 2016:07:31 10:10:20.291), so use double to parse. See Issue 82
-                    return new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]), int.Parse(parts[4]), (int)double.Parse(parts[5]));
+
+                    if (parts[5].Contains("."))
+                    {
+                        string[] secondParts = parts[5].Split('.');
+
+                        preserveMilliseconds = true;
+                        return new DateTime(
+                            int.Parse(parts[0]),
+                            int.Parse(parts[1]),
+                            int.Parse(parts[2]),
+                            int.Parse(parts[3]),
+                            int.Parse(parts[4]),
+                            int.Parse(secondParts[0]),
+                            int.Parse(secondParts[1])
+                        );
+                    }
+                    else
+                    {
+                        preserveMilliseconds = false;
+                        return new DateTime(
+                            int.Parse(parts[0]),
+                            int.Parse(parts[1]),
+                            int.Parse(parts[2]),
+                            int.Parse(parts[3]),
+                            int.Parse(parts[4]),
+                            int.Parse(parts[5])
+                        );
+                    }
                 }
                 else if (!hastime && parts.Length == 3)
                 {
                     // yyyy:MM:dd
+                    preserveMilliseconds = false;
                     return new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]));
                 }
                 else
                 {
+                    preserveMilliseconds = false;
                     return DateTime.MinValue;
                 }
             }
             catch (ArgumentOutOfRangeException)
             {
+                preserveMilliseconds = false;
                 return DateTime.MinValue;
             }
             catch (ArgumentException)
             {
+                preserveMilliseconds = false;
                 return DateTime.MinValue;
             }
         }
@@ -96,9 +127,9 @@ namespace ExifLibrary
         /// <summary>
         /// Returns a DateTime object converted from the given byte array.
         /// </summary>
-        public static DateTime ToDateTime(byte[] data)
+        public static DateTime ToDateTime(byte[] data, out bool preserveMilliseconds)
         {
-            return ToDateTime(data, true);
+            return ToDateTime(data, true, out preserveMilliseconds);
         }
 
         /// <summary>
@@ -294,13 +325,22 @@ namespace ExifLibrary
         /// <summary>
         /// Converts the given datetime to an array of bytes with a null terminator.
         /// </summary>
-        public static byte[] GetBytes(DateTime value, bool hastime)
+        public static byte[] GetBytes(DateTime value, bool hastime, bool preserveMilliseconds)
         {
-            string str = "";
+            string str;
+            
             if (hastime)
-                str = value.ToString("yyyy:MM:dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+            {
+                if (preserveMilliseconds)
+                    str = value.ToString("yyyy:MM:dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture);
+                else
+                    str = value.ToString("yyyy:MM:dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+            }
             else
+            {
                 str = value.ToString("yyyy:MM:dd", System.Globalization.CultureInfo.InvariantCulture);
+            }
+
             return GetBytes(str, true, Encoding.ASCII);
         }
 

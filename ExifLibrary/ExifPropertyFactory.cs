@@ -41,7 +41,7 @@ namespace ExifLibrary
                 else if (tag == 0x128) // ResolutionUnit
                     return new ExifEnumProperty<ResolutionUnit>(ExifTag.ResolutionUnit, (ResolutionUnit)conv.ToUInt16(value, 0));
                 else if (tag == 0x132) // DateTime
-                    return new ExifDateTime(ExifTag.DateTime, ExifBitConverter.ToDateTime(value));
+                    return new ExifDateTime(ExifTag.DateTime, ExifBitConverter.ToDateTime(value, out bool _), false);
                 else if (tag == 0x9c9b || tag == 0x9c9c ||  // Windows tags
                     tag == 0x9c9d || tag == 0x9c9e || tag == 0x9c9f)
                     return new WindowsByteString(etag, Encoding.Unicode.GetString(value).TrimEnd('\0'));
@@ -80,9 +80,9 @@ namespace ExifLibrary
                     return new ExifEncodedString(ExifTag.UserComment, val, enc);
                 }
                 else if (tag == 0x9003) // DateTimeOriginal
-                    return new ExifDateTime(ExifTag.DateTimeOriginal, ExifBitConverter.ToDateTime(value));
+                    return new ExifDateTime(ExifTag.DateTimeOriginal, ExifBitConverter.ToDateTime(value, out bool preserveMilliseconds), preserveMilliseconds);
                 else if (tag == 0x9004) // DateTimeDigitized
-                    return new ExifDateTime(ExifTag.DateTimeDigitized, ExifBitConverter.ToDateTime(value));
+                    return new ExifDateTime(ExifTag.DateTimeDigitized, ExifBitConverter.ToDateTime(value, out bool preserveMilliseconds), preserveMilliseconds);
                 else if (tag == 0x8822) // ExposureProgram
                     return new ExifEnumProperty<ExposureProgram>(ExifTag.ExposureProgram, (ExposureProgram)conv.ToUInt16(value, 0));
                 else if (tag == 0x9207) // MeteringMode
@@ -170,7 +170,7 @@ namespace ExifLibrary
                 else if (tag == 25) // GPSDestDistanceRef
                     return new ExifEnumProperty<GPSDistanceRef>(ExifTag.GPSDestDistanceRef, (GPSDistanceRef)value[0]);
                 else if (tag == 29) // GPSDateStamp
-                    return new ExifDate(ExifTag.GPSDateStamp, ExifBitConverter.ToDateTime(value, false));
+                    return new ExifDate(ExifTag.GPSDateStamp, ExifBitConverter.ToDateTime(value, false, out bool _));
                 else if (tag == 30) // GPSDifferential
                     return new ExifEnumProperty<GPSDifferential>(ExifTag.GPSDifferential, (GPSDifferential)conv.ToUInt16(value, 0));
             }
@@ -196,7 +196,7 @@ namespace ExifLibrary
                 else if (tag == 0x128) // ResolutionUnit
                     return new ExifEnumProperty<ResolutionUnit>(ExifTag.ThumbnailResolutionUnit, (ResolutionUnit)conv.ToUInt16(value, 0));
                 else if (tag == 0x132) // DateTime
-                    return new ExifDateTime(ExifTag.ThumbnailDateTime, ExifBitConverter.ToDateTime(value));
+                    return new ExifDateTime(ExifTag.ThumbnailDateTime, ExifBitConverter.ToDateTime(value, out bool _), false);
             }
 
             if (type == 1) // 1 = BYTE An 8-bit unsigned integer.
