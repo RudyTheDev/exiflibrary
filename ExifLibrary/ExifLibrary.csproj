@@ -13,10 +13,10 @@
 	<Description>Exif metadata modification library.</Description>
 	<PackageProjectUrl>https://github.com/oozcitak/exiflibrary</PackageProjectUrl>
 	<PackageTags>exif;jpeg;image</PackageTags>
-	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageIconUrl>https://github.com/oozcitak/exiflibrary/raw/master/ExifLibrary/exiflibrary_64.png</PackageIconUrl>
 	<RepositoryUrl>https://github.com/oozcitak/exiflibrary</RepositoryUrl>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/oozcitak/exiflibrary/master/LICENSE</PackageLicenseUrl>
+	<IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
