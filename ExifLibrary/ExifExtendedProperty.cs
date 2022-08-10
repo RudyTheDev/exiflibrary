@@ -364,15 +364,15 @@ namespace ExifLibrary
         public MathEx.UFraction32 Minutes { get { return mValue[1]; } set { mValue[1] = value; } }
         public MathEx.UFraction32 Seconds { get { return mValue[2]; } set { mValue[2] = value; } }
 
-        public static explicit operator float(GPSLatitudeLongitude obj) { return obj.ToFloat(); }
-        public float ToFloat()
+        public static explicit operator double(GPSLatitudeLongitude obj) { return obj.ToDouble(); }
+        public double ToDouble()
         {
-            return (float)Degrees + ((float)Minutes) / 60.0f + ((float)Seconds) / 3600.0f;
+            return (double)Degrees + ((double)Minutes) / 60.0f + ((double)Seconds) / 3600.0f;
         }
 
         public override string ToString()
         {
-            return string.Format("{0:F2}°{1:F2}'{2:F2}\"", (float)Degrees, (float)Minutes, (float)Seconds);
+            return string.Format("{0:F2}°{1:F2}'{2:F6}\"", (double)Degrees, (double)Minutes, (double)Seconds);
         }
 
         public GPSLatitudeLongitude(ExifTag tag, MathEx.UFraction32[] value)
@@ -381,8 +381,8 @@ namespace ExifLibrary
             ;
         }
 
-        public GPSLatitudeLongitude(ExifTag tag, float d, float m, float s)
-            : base(tag, new MathEx.UFraction32[] { new MathEx.UFraction32(d), new MathEx.UFraction32(m), new MathEx.UFraction32(s) })
+        public GPSLatitudeLongitude(ExifTag tag, double d, double m, double s, double accuracy = 0.000001)
+            : base(tag, new MathEx.UFraction32[] { new MathEx.UFraction32(d, accuracy), new MathEx.UFraction32(m, accuracy), new MathEx.UFraction32(s, accuracy) })
         {
             ;
         }

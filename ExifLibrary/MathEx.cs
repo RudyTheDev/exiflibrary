@@ -1083,8 +1083,8 @@ namespace ExifLibrary
                 ;
             }
 
-            public UFraction32(double value)
-                : this(FromDouble(value))
+            public UFraction32(double value, double accuracy = 0.000001)
+                : this(FromDouble(value, accuracy))
             {
                 ;
             }
@@ -1283,59 +1283,55 @@ namespace ExifLibrary
             /// </summary>
             /// <param name="value">The floating-point number to be converted.</param>
             /// <returns>The rational representation of value.</returns>
-            private static UFraction32 FromDouble(double value)
+            /// <remarks>From https://stackoverflow.com/a/42085412/8047867</remarks>
+            private static UFraction32 FromDouble(double value, double accuracy = 0.000001)
             {
-                if (value < 0)
-                    throw new ArgumentException("value cannot be negative.", "value");
-
-                if (double.IsNaN(value))
-                    return UFraction32.NaN;
-                else if (double.IsInfinity(value))
-                    return UFraction32.Infinity;
-
-                double f = value;
-                double forg = f;
-                uint lnum = 0;
-                uint lden = 1;
-                uint num = 1;
-                uint den = 0;
-                double lasterr = 1.0;
-                uint a = 0;
-                int currIteration = 0;
-                while (true)
+                if (accuracy <= 0.0 || accuracy >= 1.0)
                 {
-                    if (++currIteration > MaximumIterations) break;
-
-                    a = (uint)Math.Floor(f);
-                    f = f - (double)a;
-                    if (Math.Abs(f) < double.Epsilon)
-                        break;
-                    f = 1.0 / f;
-                    if (double.IsInfinity(f))
-                        break;
-                    uint cnum = num * a + lnum;
-                    uint cden = den * a + lden;
-                    if (Math.Abs((double)cnum / (double)cden - forg) < double.Epsilon)
-                        break;
-                    double err = ((double)cnum / (double)cden - (double)num / (double)den) / ((double)num / (double)den);
-                    // Are we converging?
-                    if (err >= lasterr)
-                        break;
-                    lasterr = err;
-                    lnum = num;
-                    lden = den;
-                    num = cnum;
-                    den = cden;
+                    throw new ArgumentOutOfRangeException(nameof(accuracy), "Must be > 0 and < 1.");
                 }
-                uint fnum = num * a + lnum;
-                uint fden = den * a + lden;
 
-                if (fden > 0)
-                    lasterr = value - ((double)fnum / (double)fden);
-                else
-                    lasterr = double.PositiveInfinity;
+                int sign = Math.Sign(value);
 
-                return new UFraction32(fnum, fden, lasterr);
+                if (sign == -1)
+                {
+                    value = Math.Abs(value);
+                }
+
+                // Accuracy is the maximum relative error; convert to absolute maxError
+                double maxError = sign == 0 ? accuracy : value * accuracy;
+
+                int n = (int) Math.Floor(value);
+                value -= n;
+
+                if (value < maxError)
+                {
+                    return new UFraction32((uint)(sign * n), (uint)1);
+                }
+
+                if (1 - maxError < value)
+                {
+                    return new UFraction32((uint)(sign * (n + 1)), (uint)1);
+                }
+
+                double z = value;
+                int previousDenominator = 0;
+                int denominator = 1;
+                int numerator;
+
+                do
+                {
+                    z = 1.0 / (z - (int) z);
+                    int temp = denominator;
+                    denominator = denominator * (int) z + previousDenominator;
+                    previousDenominator = temp;
+                    numerator = Convert.ToInt32(value * denominator);
+                }
+                while (Math.Abs(value - (double) numerator / denominator) > maxError && z != (int) z);
+
+                return new UFraction32((uint)((n * denominator + numerator) * sign), (uint)denominator);
+                
+                // todo: actual error not returned/stored
             }
 
             /// <summary>Converts the string representation of a fraction to a Fraction type.</summary>
